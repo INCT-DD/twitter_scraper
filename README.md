@@ -88,7 +88,7 @@ O projeto foi organizado em diferentes camadas, separando as responsabilidades d
 ## Fluxo geral
 
 De forma simplificada, o funcionamento da aplicação ocorre da seguinte maneira:
-
+```text
 Configuração
      │
      ▼
@@ -112,6 +112,7 @@ Coleta dos tweets
                            │
                            ▼
                    Download de mídia
+```
 
 A separação das responsabilidades permite que os componentes de coleta, armazenamento e exportação sejam mantidos de forma independente.
 
@@ -130,21 +131,29 @@ A separação das responsabilidades permite que os componentes de coleta, armaze
   
   Clone o repositório:
   
-  `git clone https://github.com/INCT-DD/twitter_scraper.git`
+  ```bash
+  git clone https://github.com/INCT-DD/twitter_scraper.git
+  ```
   
   Entre na pasta do projeto:
   
-  `cd twitter_scraper`
+  ```bash
+  cd twitter_scraper
+  ```
 
   ### 3.3 Criar ambiente virtual
 
   Recomenda-se utilizar um ambiente virtual Python:
   
-  `python -m venv venv`
+  ```bash
+  python -m venv venv
+  ```
   
   No Windows:
   
-  `venv\Scripts\activate`
+  ```bash 
+  venv\Scripts\activate
+  ```
 
   ### 3.4 Configurar as variáveis do banco
 
@@ -163,5 +172,90 @@ A separação das responsabilidades permite que os componentes de coleta, armaze
   Essas informações devem ser armazenadas em um arquivo `.env`.
 
   
-  >[Importante:]
+  >[!IMPORTANT]
   > o arquivo .env não deve ser versionado no Git. Ele está incluído no .gitignore do projeto.
+
+  ### 3.5 Banco de Dados
+
+  O projeto utiliza PostgreSQL para armazenar os dados coletados.
+
+  A conexão com o banco é realizada por meio do arquivo `config.py` e das configurações do arquivo `.env`.
+  As operações de criação das tabelas, consulta e inserção dos tweets são realizadas em `storage.py`.
+
+  Durante a inicialização do pipeline, as tabelas necessárias são verificadas e criadas quando necessário.
+
+  As principais estruturas utilizadas pelo banco de dados são:
+
+  - `tweets`: armazena os dados das publicações coletadas;
+  - `media_queue`: gerencia a fila de mídias associadas às publicações.
+  
+  A tabela tweets possui informações relacionadas ao perfil, publicação, métricas e metadados do tweet, incluindo:
+  
+  - identificação do perfil;
+  - categoria;
+  - UF;
+  - partido;
+  - nome e usuário do autor;
+  - ID da publicação;
+  - data de publicação;
+  - data de coleta;
+  - texto;
+  - curtidas;
+  - comentários;
+  - reposts;
+  - citações;
+  - visualizações;
+  - idioma;
+  - URL da publicação;
+  - tipo de tweet;
+  - identificadores de tweets relacionados;
+  - dados brutos da publicação em formato JSONB.
+
+  O campo `platform_post_id` possui uma restrição de unicidade, permitindo evitar o armazenamento duplicado de uma mesma publicação.
+
+  >[!NOTE]
+  > O armazenamento dos dados coletados e o controle de duplicidade são realizados pelo módulo `storage.py`.
+
+  ### 3.6 Dependências
+
+  As principais bibliotecas utilizadas pelo projeto são:
+
+  | Arquivo               | Responsabilidade                                        |
+  | --------------------- | --------------------------------------------------------|
+  | `twscrape`            | Coleta de dados da plataforma X                         |
+  | `psycopg2`            | Conexão e comunicação com o PostgreSQL                  |
+  | `python-dotenv`       | Carregamento das variáveis de ambiente do arquivo `.env`|
+ 
+  As dependências devem ser instaladas no ambiente Python antes da execução do sistema.
+
+  Caso ainda não estejam instaladas, utilize:
+
+  ```bash
+  pip install twscrape psycopg2-binary python-dotenv
+  ```
+  Após a instalação, o ambiente estará preparado para executar os componentes do projeto.
+
+  ### 3.7 Configuração das contas e perfis
+
+  Para realizar a coleta, o sistema utiliza dois arquivos de configuração mantidos localmente:
+  
+  - `cookies.txt`: utilizado para configurar as contas autenticadas no `twscrape`;
+  - `profiles.json`: utilizado para definir os perfis que serão processados na coleta.
+  
+  Esses arquivos não devem ser versionados no repositório.
+  
+  > [!WARNING]
+  > O arquivo `cookies.txt` contém informações de autenticação. Não compartilhe esse arquivo ou seus conteúdos.
+  
+  > [!IMPORTANT]
+  > Os arquivos `cookies.txt` e `profiles.json` estão incluídos no `.gitignore` do projeto.
+  
+  #### `cookies.txt`
+  
+  O arquivo `cookies.txt` deve conter as contas utilizadas pelo sistema no seguinte formato:
+  
+  ```text
+  nome_da_conta|cookie_string
+  ```
+
+  
